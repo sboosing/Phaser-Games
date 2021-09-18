@@ -7,6 +7,7 @@ import * as Phaser from 'phaser';
 
 const FOOD_KEY = 'food';
 const BODY_KEY = 'body';
+const LOGO_WITH_NAME_KEY = 'logo_with_name';
 
 export const enum Direction {
   UP,
@@ -19,6 +20,7 @@ class GameScene extends Phaser.Scene {
   food!: Food;
   snake!: Snake;
   cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+  sponsorText!: Phaser.GameObjects.Text;
 
   constructor() {
     super('Game');
@@ -27,16 +29,28 @@ class GameScene extends Phaser.Scene {
   preload() {
     this.load.image(FOOD_KEY, '/assets/food.png');
     this.load.image(BODY_KEY, '/assets/body.png');
+    this.load.image(LOGO_WITH_NAME_KEY, '/assets/LogoWithName.png');
   }
 
   create() {
+    const gameCanvas = this.sys.canvas;
+    const background = this.add.image(0, 0, LOGO_WITH_NAME_KEY);
+    background.setOrigin(0, 0);
     this.cursors = this.input.keyboard.createCursorKeys();
     this.snake = new Snake(this, 8, 8);
     this.food = new Food(this, 3, 4);
+
+    this.sponsorText = this.add.text(0, 0, 'Sponsor 1', { fontSize: '48px' });
+    // Set the point that will be rotated about.
+    this.sponsorText.setOrigin(0.5, 0.5);
+    // Position text in the center of the screen.
+    this.sponsorText.setPosition(gameCanvas.width / 2, gameCanvas.height / 2);
   }
 
   update(time: number, delta: number) {
     super.update(time, delta);
+    // Rotate the text.
+    this.sponsorText.angle += 1;
     if (!this.snake.alive) {
       return;
     }
@@ -94,7 +108,7 @@ class GameScene extends Phaser.Scene {
     this.snake.updateGrid(testGrid);
 
     //  Purge out false positions
-    const validLocations = [];
+    const validLocations: { x: number; y: number }[] = [];
 
     for (let y = 0; y < 30; y++) {
       for (let x = 0; x < 40; x++) {
@@ -233,13 +247,13 @@ class Snake extends Phaser.Scene {
     this.direction = this.heading;
 
     //  Update the body segments and place the last coordinate into this.tail
-    const updatedTail = Phaser.Actions.ShiftPosition(
+    const { x, y } = Phaser.Actions.ShiftPosition(
       this.body.getChildren(),
       this.headPosition.x * 16,
       this.headPosition.y * 16,
       1
     );
-    this.tail = new Phaser.Geom.Point(updatedTail.x, updatedTail.y);
+    this.tail = new Phaser.Geom.Point(x, y);
 
     //  Check to see if any of the body pieces have the same x/y as the head
     //  If they do, the head ran into the body
