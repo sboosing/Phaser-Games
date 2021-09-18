@@ -21,6 +21,7 @@ class GameScene extends Phaser.Scene {
   snake!: Snake;
   cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   sponsorText!: Phaser.GameObjects.Text;
+  canvas!: HTMLCanvasElement;
 
   constructor() {
     super('Game');
@@ -33,7 +34,7 @@ class GameScene extends Phaser.Scene {
   }
 
   create() {
-    const gameCanvas = this.sys.canvas;
+    this.canvas = this.sys.canvas;
     const background = this.add.image(0, 0, LOGO_WITH_NAME_KEY);
     background.setOrigin(0, 0);
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -44,7 +45,7 @@ class GameScene extends Phaser.Scene {
     // Set the point that will be rotated about.
     this.sponsorText.setOrigin(0.5, 0.5);
     // Position text in the center of the screen.
-    this.sponsorText.setPosition(gameCanvas.width / 2, gameCanvas.height / 2);
+    this.sponsorText.setPosition(this.canvas.width / 2, this.canvas.height / 2);
   }
 
   update(time: number, delta: number) {
@@ -52,6 +53,13 @@ class GameScene extends Phaser.Scene {
     // Rotate the text.
     this.sponsorText.angle += 1;
     if (!this.snake.alive) {
+      this.sponsorText.destroy(true);
+      const gameOver = this.add.text(0, 0, 'GAME OVER', {
+        fontSize: '96px',
+        color: 'red'
+      });
+      gameOver.setOrigin(0.5, 0.5);
+      gameOver.setPosition(this.canvas.width / 2, this.canvas.height / 2);
       return;
     }
 
@@ -265,10 +273,7 @@ class Snake extends Phaser.Scene {
     );
 
     if (hitBody) {
-      console.log('dead');
-
       this.alive = false;
-
       return false;
     } else {
       //  Update the timer ready for the next movement
