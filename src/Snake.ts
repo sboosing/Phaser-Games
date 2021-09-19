@@ -4,17 +4,11 @@
  **********************************************************************************************************************/
 
 import * as Phaser from 'phaser';
+import { Direction, Swipe } from './SwipePlugin';
 
 const FOOD_KEY = 'food';
 const BODY_KEY = 'body';
 const LOGO_WITH_NAME_KEY = 'logo_with_name';
-
-export const enum Direction {
-  UP,
-  DOWN,
-  LEFT,
-  RIGHT
-}
 
 class GameScene extends Phaser.Scene {
   food!: Food;
@@ -22,6 +16,8 @@ class GameScene extends Phaser.Scene {
   cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   sponsorText!: Phaser.GameObjects.Text;
   canvas!: HTMLCanvasElement;
+  isMobile!: boolean;
+  swipe!: Swipe;
 
   constructor() {
     super('Game');
@@ -34,10 +30,13 @@ class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this.isMobile = !this.sys.game.device.os.desktop;
+    this.swipe = new Swipe(this);
     this.canvas = this.sys.canvas;
+    this.cursors = this.input.keyboard.createCursorKeys();
+
     const background = this.add.image(0, 0, LOGO_WITH_NAME_KEY);
     background.setOrigin(0, 0);
-    this.cursors = this.input.keyboard.createCursorKeys();
     this.snake = new Snake(this, 8, 8);
     this.food = new Food(this, 3, 4);
 
@@ -63,6 +62,33 @@ class GameScene extends Phaser.Scene {
       return;
     }
 
+    let isLeft = false;
+    let isRight;
+    let isUp;
+    let isDown;
+    if (this.isMobile) {
+      const swipeDirection = this.swipe.getSwipeDirection();
+      if (swipeDirection === Direction.LEFT) {
+        isLeft = true;
+      } else if (swipeDirection === Direction.RIGHT) {
+        isRight = true;
+      } else if (swipeDirection === Direction.DOWN) {
+        isDown = true;
+      } else if (swipeDirection === Direction.UP) {
+        isUp = true;
+      }
+    } else {
+      if (this.cursors.left.isDown) {
+        isLeft = true;
+      } else if (this.cursors.right.isDown) {
+        isRight = true;
+      } else if (this.cursors.up.isDown) {
+        isUp = true;
+      } else if (this.cursors.down.isDown) {
+        isDown = true;
+      }
+    }
+
     /**
      * Check which key is pressed, and then change the direction the snake
      * is heading based on that. The checks ensure you don't double-back
@@ -70,13 +96,13 @@ class GameScene extends Phaser.Scene {
      * the LEFT cursor, it ignores it, because the only valid directions you
      * can move in at that time is up and down.
      */
-    if (this.cursors.left.isDown) {
+    if (isLeft) {
       this.snake.faceLeft();
-    } else if (this.cursors.right.isDown) {
+    } else if (isRight) {
       this.snake.faceRight();
-    } else if (this.cursors.up.isDown) {
+    } else if (isUp) {
       this.snake.faceUp();
-    } else if (this.cursors.down.isDown) {
+    } else if (isDown) {
       this.snake.faceDown();
     }
 
