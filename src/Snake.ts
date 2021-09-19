@@ -226,14 +226,14 @@ class Snake extends Phaser.Scene {
     }
   }
 
+  /**
+   * Based on the heading property (which is the direction the pgroup pressed)
+   * we update the headPosition value accordingly.
+   *
+   * The Math.wrap call allow the snake to wrap around the screen, so when
+   * it goes off any of the sides it re-appears on the other.
+   */
   move(time: number) {
-    /**
-     * Based on the heading property (which is the direction the pgroup pressed)
-     * we update the headPosition value accordingly.
-     *
-     * The Math.wrap call allow the snake to wrap around the screen, so when
-     * it goes off any of the sides it re-appears on the other.
-     */
     switch (this.heading) {
       case Direction.LEFT:
         this.headPosition.x = Phaser.Math.Wrap(this.headPosition.x - 1, 0, 40);
@@ -320,15 +320,17 @@ class Snake extends Phaser.Scene {
   }
 }
 
-new Phaser.Game({
-  title: 'Snake',
-  type: Phaser.WEBGL,
-  width: 640,
-  height: 480,
-  backgroundColor: '#bfcc00',
-  parent: 'app',
-  scene: [GameScene],
-  audio: {
-    disableWebAudio: true
-  }
-});
+export const createSnakeGame = () => {
+  return new Phaser.Game({
+    title: 'Snake',
+    type: Phaser.WEBGL,
+    width: 640,
+    height: 480,
+    backgroundColor: '#bfcc00',
+    parent: 'game',
+    scene: [GameScene],
+    audio: {
+      disableWebAudio: true
+    }
+  });
+};

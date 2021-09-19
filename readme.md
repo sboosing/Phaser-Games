@@ -7,5 +7,11 @@
 3. Run `npm install`.
 4. Run `npm run dev`.
 5. Open a browser to `http://localhost:3000`.
-6. This starts the Snake game.
-7. The game can be played using the arrow keys on a keyboard.
+6. There are two game options to select from.
+
+#### Games
+
+- Snake
+    - This game can be played using the arrow keys.
+- Board Game
+    - This game doesn't have a playing mode yet. The purpose is just to illustrate moving a character along a board.
