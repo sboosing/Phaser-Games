@@ -7,15 +7,19 @@ class GameScene extends Phaser.Scene {
   board: { x: number; y: number }[][];
   correctPath: { x: number; y: number }[];
   currStep: number;
+  nextStep: number;
   maxX: number;
   maxY: number;
+  character!: Phaser.GameObjects.Sprite;
 
   constructor() {
     super('Game');
+
     this.maxX = 40;
     this.maxY = 30;
     this.board = this.generateBoard();
     this.currStep = 0;
+    this.nextStep = 0;
     this.correctPath = [
       { x: 0, y: 1 },
       { x: 1, y: 1 },
@@ -64,10 +68,18 @@ class GameScene extends Phaser.Scene {
       this.createBrick(this.correctPath[i].x, this.correctPath[i].y);
     }
 
-    const idleSprite = this.add.sprite(-32, 0, KNIGHT_KEY);
-    idleSprite.setOrigin(0, 0);
-    idleSprite.setDisplaySize(100, 55);
-    idleSprite.anims.create({
+    this.input.keyboard.createCursorKeys();
+    this.input.keyboard.on('keyup', (event: KeyboardEvent) => {
+      if (event.key === ' ') {
+        this.moveForward(1);
+      }
+    });
+
+    this.character = this.physics.add.sprite(-32, 0, KNIGHT_KEY);
+    this.character.setOrigin(0, 0);
+    // TODO: Is this needed?
+    this.character.setDisplaySize(100, 55);
+    this.character.anims.create({
       key: 'idle',
       repeat: -1,
       frames: this.anims.generateFrameNumbers(KNIGHT_KEY, {
@@ -75,36 +87,31 @@ class GameScene extends Phaser.Scene {
         end: 7
       })
     });
-    idleSprite.play('idle');
-    let i = 0;
-    // TODO: Probably not the correct way to move the position in Phaser.
-    //  Should probably use the update method.
-    // Make the character "walk" the board.
-    setInterval(() => {
-      const path = this.correctPath[i];
-      const location = this.board[path.y][path.x];
-      idleSprite.setPosition(location.x, location.y);
-      i++;
-      if (i >= this.correctPath.length) {
-        i = 0;
-      }
-    }, 1250);
+    this.character.anims.create({
+      key: 'walk',
+      repeat: -1,
+      frames: this.anims.generateFrameNumbers(KNIGHT_KEY, {
+        start: 8,
+        end: 15
+      })
+    });
 
-    // const walkSprite = this.add.sprite(0, 75, KNIGHT_KEY);
-    // walkSprite.setOrigin(0, 0);
-    // walkSprite.anims.create({
-    //   key: 'walk',
-    //   repeat: -1,
-    //   frames: this.anims.generateFrameNumbers(KNIGHT_KEY, {
-    //     start: 8,
-    //     end: 15
-    //   })
-    // });
-    // walkSprite.play('walk');
+    this.character.play('idle');
   }
 
   update(time: number, delta: number) {
     super.update(time, delta);
+
+    let { x, y } = this.correctPath[this.currStep];
+    x -= 1;
+    y -= 1;
+    x *= 32;
+    y *= 32;
+    if (this.character.x >= x && this.character.y >= y) {
+      this.character.body.velocity.x = 0;
+      this.character.body.velocity.y = 0;
+      this.character.play('idle');
+    }
   }
 
   generateBoard() {
@@ -127,6 +134,12 @@ class GameScene extends Phaser.Scene {
     brick.setScale(1 / 8, 1 / 8);
     brick.setOrigin(0, 0);
   }
+
+  moveForward(numSteps: number) {
+    this.character.play('walk', true);
+    this.character.body.velocity.x = 25;
+    this.currStep += numSteps;
+  }
 }
 
 export const createBoardGame = () => {
@@ -140,6 +153,9 @@ export const createBoardGame = () => {
     scene: [GameScene],
     audio: {
       disableWebAudio: true
+    },
+    physics: {
+      default: 'arcade'
     }
   });
 };

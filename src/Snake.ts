@@ -5,6 +5,7 @@
 
 import * as Phaser from 'phaser';
 import { Direction, Swipe } from './SwipePlugin';
+import { Game } from './Game';
 
 const FOOD_KEY = 'food';
 const BODY_KEY = 'body';
@@ -343,6 +344,26 @@ class Snake extends Phaser.Scene {
     });
 
     return grid;
+  }
+}
+
+export class SnakeGame extends Game {
+  game: Phaser.Game;
+
+  constructor() {
+    super();
+    this.game = new Phaser.Game({
+      title: 'Snake',
+      type: Phaser.WEBGL,
+      width: 640,
+      height: 480,
+      backgroundColor: '#bfcc00',
+      parent: 'game',
+      scene: [GameScene],
+      audio: {
+        disableWebAudio: true
+      }
+    });
   }
 }
 
